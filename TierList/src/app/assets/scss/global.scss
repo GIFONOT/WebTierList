@@ -1,0 +1,55 @@
+:root {
+  --font-primary: "Roboto", sans-serif;
+  --font-secondary: "Open Sans", sans-serif;
+
+  --text-xs: 10px;
+  --text-m: 13px;
+  --text-l: 18px;
+  --text-lx: 20px;
+  --text-xl: 24px;
+
+  --bg-primary: #222831;     /* тёмно-графитовый */
+  --text-primary: #eeeeee;           /* светлый текст */
+  --accent: #00adb5;                  /* бирюзовый акцент */
+  --secondary: #393e46;               /* второстепенные элементы */
+  --element-bg: #2f3542;              /* фон карточек/блоков */
+  --border: #4b5563;                  /* мягкая граница */
+  --ok: #4caf50;   
+}
+
+.dark {
+  --bg-primary: #0d1b2a;
+  --text-primary: #e0e0e0;
+  --accent: #3949ab;
+  --secondary: #9e9e9e;
+  --element-bg: #1b263b;
+  --border: #3d5a80;
+  --ok: #4caf50;
+}
+
+body {
+  font-family: var(--font-primary);
+  font-size: var(--text-xl);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+  margin: 0;
+
+  a {
+    color: var(--accent);
+  }
+}
+
+@font-face {
+  font-family: "Roboto";
+  src: url("../fonts/Roboto-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Open Sans";
+  src: url("../fonts/OpenSans-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}

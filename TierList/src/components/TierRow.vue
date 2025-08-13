@@ -1,10 +1,19 @@
 <template>
-  <div class="tier-row" 
-       :style="{ backgroundColor: transparentize(colorTier) }" 
-       @dragover.prevent="onDragOver"
-       @drop="onDrop"
+  <div
+    class="tier-row"
+    :style="{ backgroundColor: transparentize(colorTier) }"
+    @dragover.prevent="onDragOver"
+    @drop="onDrop"
   >
-    <div class="tier-label" :style="{ backgroundColor: colorTier }">{{ label }}</div>
+    <div class="tier-left">
+      <div class="tier-label" :style="{ backgroundColor: colorTier }">{{ label }}</div>
+      <FeatherIcon
+        class="icon"
+        name="edit"
+        size="20"
+        color="var(--text-primary)"
+      />
+    </div>
     <div class="tier-content" ref="contentRef">
       <ItemCard
         v-for="(item, index) in items"
@@ -16,12 +25,21 @@
         :index="index"
       />
     </div>
+    <FeatherIcon
+      v-if="items.length === 0"
+      class="icon-delete"
+      name="trash-2"
+      size="20"
+      color="var(--text-primary)"
+      @click="deleteRow"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 import ItemCard from './ItemCard.vue'
+import FeatherIcon from '@/entities/Icon/FeatherIcon.vue'
 
 interface TierItem {
   id: string | number
@@ -34,6 +52,9 @@ interface Props {
   items: TierItem[]
   colorTier: string
 }
+const contentRef = ref<HTMLElement | null>(null)
+let dragOverIndex = -1
+const props = defineProps<Props>()
 
 function transparentize(color: string, alpha = 0.2): string {
   if (color.startsWith('rgb')) {
@@ -49,13 +70,19 @@ function transparentize(color: string, alpha = 0.2): string {
   return color
 }
 
-const props = defineProps<Props>()
 const emit = defineEmits<{
-  (e: 'dropItem', payload: { id: string | number; sourceLabel: string; targetLabel: string; targetIndex: number }): void
+  (
+    e: 'dropItem',
+    payload: { id: string | number; sourceLabel: string; targetLabel: string; targetIndex: number },
+  ): void
+  (e: 'deleteRow', label: string): void
+  (e: 'updateTitle', payload: { label: string; newTitle: string }): void
+  (e: 'updateColor', payload: { label: string; newColor: string }): void
 }>()
 
-const contentRef = ref<HTMLElement | null>(null)
-let dragOverIndex = -1
+function deleteRow() {
+  emit('deleteRow', props.label)
+}
 
 function onDragOver(event: DragEvent) {
   event.preventDefault()
@@ -64,7 +91,7 @@ function onDragOver(event: DragEvent) {
   const children = Array.from(contentRef.value.children)
   const x = event.clientX
 
-  dragOverIndex = children.findIndex(child => {
+  dragOverIndex = children.findIndex((child) => {
     const rect = (child as HTMLElement).getBoundingClientRect()
     return x < rect.left + rect.width / 2
   })
@@ -80,30 +107,49 @@ function onDrop(event: DragEvent) {
       id: data.id,
       sourceLabel: data.sourceLabel,
       targetLabel: props.label,
-      targetIndex: dragOverIndex
+      targetIndex: dragOverIndex,
     })
     dragOverIndex = -1
   } catch (e) {
     console.error('Error parsing drop data', e)
   }
 }
-</script>
 
+// Редактирование названия
+const editingTitle = ref(false)
+const tempTitle = ref(props.label)
+
+function startEditing() {
+  tempTitle.value = props.label
+  editingTitle.value = true
+}
+
+function saveTitle() {
+  editingTitle.value = false
+  if (tempTitle.value.trim() && tempTitle.value !== props.label) {
+    emit('updateTitle', { label: props.label, newTitle: tempTitle.value })
+  }
+}
+
+function updateColor(newColor: string) {
+  emit('updateColor', { label: props.label, newColor })
+}
+</script>
 
 <style scoped lang="scss">
 .tier-row {
   display: flex;
-  align-items: flex-start;
-  margin-bottom: 8px;
   border-radius: 8px;
   overflow: hidden;
   background-color: var(--element-bg);
 
   .tier-label {
-    color: #ffffff;
+    color: var(--text-primary);
     font-weight: bold;
+    border-radius: 0 0 8px 0;
     padding: 8px;
-    width: 60px;
+    width: 90px;
+    overflow-wrap: break-word;
     text-align: center;
     flex-shrink: 0;
   }
@@ -116,5 +162,21 @@ function onDrop(event: DragEvent) {
     padding: 8px;
     min-height: 100px;
   }
+  .icon {
+    padding: 12px;
+    margin-top: auto;
+    cursor: pointer;
+  }
+  .icon-delete {
+    padding: 12px;
+    cursor: pointer;
+  }
 }
+.tier-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+
 </style>

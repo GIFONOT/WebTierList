@@ -7,14 +7,27 @@
       :items="row.items"
       :color-tier="row.color"
       @dropItem="handleDrop"
+      @deleteRow="handleDeleteRow"
     />
+    <div
+      class="add-row"
+      @click="rows.push({ label: 'NEW', color: 'rgb(200, 200, 200)', items: [] })"
+    >
+      <FeatherIcon
+        class="icon"
+        name="plus"
+        strokeWidth="2.5"
+        size="24"
+        color="var(--text-primary)"
+      />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { reactive } from 'vue'
 import TierRow from '@components/TierRow.vue'
-
+import FeatherIcon from '@/entities/Icon/FeatherIcon.vue'
 
 interface Item {
   id: string | number
@@ -30,7 +43,7 @@ interface Row {
 
 const rows = reactive<Row[]>([
   {
-    label: 'S',
+    label: 'S+',
     color: 'rgb(218, 97, 92)',
     items: [
       { id: 1, title: 'Death Stranding 2', image: '/ds2.avif' },
@@ -44,7 +57,7 @@ const rows = reactive<Row[]>([
   {
     label: 'A',
     color: 'rgb(229, 156, 90)',
-    items: [{ id: 3, title: 'Sekiro', image: '/Sekiro.png' },],
+    items: [{ id: 3, title: 'Sekiro', image: '/Sekiro.png' }],
   },
   {
     label: 'B',
@@ -53,28 +66,39 @@ const rows = reactive<Row[]>([
   },
 ])
 
-const handleDrop = (payload: { id: string | number; sourceLabel: string; targetLabel: string; targetIndex: number }) => {
+const handleDrop = (payload: {
+  id: string | number
+  sourceLabel: string
+  targetLabel: string
+  targetIndex: number
+}) => {
   if (payload.sourceLabel === payload.targetLabel) {
     // Перемещение внутри одного ряда
-    const row = rows.find(r => r.label === payload.sourceLabel)
+    const row = rows.find((r) => r.label === payload.sourceLabel)
     if (!row) return
-    const currentIndex = row.items.findIndex(item => item.id === payload.id)
+    const currentIndex = row.items.findIndex((item) => item.id === payload.id)
     if (currentIndex === -1) return
     const [movedItem] = row.items.splice(currentIndex, 1)
     row.items.splice(payload.targetIndex, 0, movedItem)
   } else {
     // Перемещение между разными рядами
-    const sourceRow = rows.find(r => r.label === payload.sourceLabel)
-    const targetRow = rows.find(r => r.label === payload.targetLabel)
+    const sourceRow = rows.find((r) => r.label === payload.sourceLabel)
+    const targetRow = rows.find((r) => r.label === payload.targetLabel)
     if (!sourceRow || !targetRow) return
 
-    const currentIndex = sourceRow.items.findIndex(item => item.id === payload.id)
+    const currentIndex = sourceRow.items.findIndex((item) => item.id === payload.id)
     if (currentIndex === -1) return
     const [movedItem] = sourceRow.items.splice(currentIndex, 1)
     targetRow.items.splice(payload.targetIndex, 0, movedItem)
   }
 }
 
+function handleDeleteRow(label: string) {
+  const index = rows.findIndex((r) => r.label === label)
+  if (index !== -1) {
+    rows.splice(index, 1)
+  }
+}
 </script>
 
 <style scoped lang="scss">
@@ -82,6 +106,17 @@ const handleDrop = (payload: { id: string | number; sourceLabel: string; targetL
   display: flex;
   flex-direction: column;
   padding: 30px;
-  gap: 10px;
+  gap: 18px;
+}
+.add-row {
+  width: 34px;
+  height: 34px;
+  color: var(--text-primary);
+  border-radius: 8px;
+  font-size: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 </style>

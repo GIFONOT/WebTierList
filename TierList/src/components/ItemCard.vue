@@ -8,6 +8,7 @@
       v-if="image" 
       :src="image" 
       :alt="title" 
+      draggable="false"
       class="item-card__image"
     />
     <div class="item-card__title">{{ title }}</div>
